@@ -18,9 +18,22 @@ jobs:
         id: extract_branch_name
         run: |
           branch_ref=${{ github.ref }}
-          # 마지막 "/" 문자열을 기준으로 그 다음 "_" 문자열까지의 문자열을 추출한 뒤에 대문자로 변환 (e.g. feature/iOS-2843_test -> IOS-2843)
-          branch_name=$(echo "$branch_ref" | awk -F'/' '{print substr($NF, 1, index($NF, "_")-1)}' | awk '{print toupper($0)}')
+          # ios, mrt2-숫자n개가 포함되는 문자열을 추출
+          branch_name=$(echo "$branch_ref" | awk -F'/' 'match($NF, /(IOS|MRT2)-[0-9]+/) {print toupper(substr($NF, RSTART, RLENGTH))}')
           echo "::set-output name=branch_name::$branch_name"
+          
+      - name: Filter Commits
+        id: filter_commits
+        run: |
+          commit_messages=$(git log --pretty=format:%s --no-merges)
+          filtered_commits=""
+          while read -r line; do
+            if [[ $line =~ (?i)(IOS|MRT2)-[0-9]+ ]]; then
+              filtered_commits+="\n$line"
+            fi
+          done <<< "$commit_messages"
+          filtered_commits=$(echo "$filtered_commits" | sed '1d')
+          echo "::set-output name=filtered_commits::$filtered_commits"
     
       - name: Use Extracted Branch Name
         run: |
@@ -36,8 +49,17 @@ jobs:
           # Jira webhook URL
           webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cba03d1be128b8bcd6"
         
-          # Jira에 보낼 JSON 데이터 작성
-          payload="{\"issues\":[\"$extracted_branch\"]}"
+          # Jira에 보낼 JSON 데이터 설정
+          payload="{\"issues\":[\"$extracted_branch\""
+        
+          if [[ -n "$filtered_commits" ]]; then
+            IFS=$'\n' read -ra commits <<< "$filtered_commits"
+            for commit in "${commits[@]}"; do
+              payload+=",\"$commit\""
+            done
+          fi
+        
+          payload+="]}"
         
           # HTTP POST 요청 보내기
           curl -X POST -H "Content-Type: application/json" -d "$payload" "$webhook_url"
