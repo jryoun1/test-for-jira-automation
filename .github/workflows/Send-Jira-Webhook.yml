@@ -18,7 +18,7 @@ jobs:
         id: extract_branch_name
         run: |
           branch_ref=${{ github.ref }}
-          branch_name=$(echo "$branch_ref" | awk -F'[/_]' '{print toupper($3)}')
+          branch_name=$(echo "$branch_ref" | awk -F'/' '{print substr($NF, 1, index($NF, "-")-1)}' | awk '{print toupper($0)}')
           echo "::set-output name=branch_name::$branch_name"
     
       - name: Use Extracted Branch Name
