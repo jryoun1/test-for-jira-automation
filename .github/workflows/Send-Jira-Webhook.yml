@@ -26,14 +26,13 @@ jobs:
         id: filter_commits
         run: |
           commit_messages=$(git log --pretty=format:%s --no-merges)
-          filtered_commits=""
+          filtered_commits=()
           while read -r line; do
-            if [[ $line =~ (?i)(IOS|TEST)-[0-9]+ ]]; then
-              filtered_commits+="\n$line"
+            if [[ $line =~ (TEST)-[0-9]+ ]]; then
+              filtered_commits+=("$line")
             fi
           done <<< "$commit_messages"
-          filtered_commits=$(echo "$filtered_commits" | sed '1d')
-          echo "::set-output name=filtered_commits::$filtered_commits"
+          echo "::set-output name=filtered_commits::${filtered_commits[@]}"
     
       - name: Use Extracted Branch Name
         run: |
@@ -46,23 +45,25 @@ jobs:
             exit 0
           fi
           
-          filtered_commits=${{ steps.filter_commits.outputs.filtered_commits }}
-          echo "Filtered Commits: $filtered_commits"
+          filtered_commits=("${{ steps.filter_commits.outputs.filtered_commits }}")
+          echo "Filtered Commits:"
+          for commit in "${filtered_commits[@]}"; do
+            echo "- $commit"
+          done
           
           # Jira webhook URL
           webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cba03d1be128b8bcd6"
         
           # Jira에 보낼 JSON 데이터 설정
-          payload="{\"issues\":[\"$extracted_branch\""
+          payload="{\"issues\":[\"$extracted_branch\"]"
         
-          if [[ -n "$filtered_commits" ]]; then
-            IFS=$'\n' read -ra commits <<< "$filtered_commits"
-            for commit in "${commits[@]}"; do
+          if [[ ${#filtered_commits[@]} -gt 0 ]]; then
+            for commit in "${filtered_commits[@]}"; do
               payload+=",\"$commit\""
             done
           fi
         
-          payload+="]}"
-        
+          payload+="}"
+          
           # HTTP POST 요청 보내기
           curl -X POST -H "Content-Type: application/json" -d "$payload" "$webhook_url"
