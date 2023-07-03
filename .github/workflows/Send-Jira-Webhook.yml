@@ -1,0 +1,36 @@
+name: Send Jira Webhook
+on:
+  push:
+    branches:
+      - '*'  # 모든 브랜치에 대해 실행됩니다.
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  
+  # This workflow contains a single job called "send-jira-webhook"
+  send-jira-webhook:
+    runs-on: ubuntu-latest # The type of runner that the job will run on
+    
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout repository
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        uses: actions/checkout@v2
+
+      - name: Extract Branch Name
+        id: extract_branch_name
+        run: |
+          branch_ref=${{ github.ref }}
+          branch_name=$(echo "$branch_ref" | awk -F'[/_]' '{print toupper($3)}')
+          echo "::set-output name=branch_name::$branch_name"
+    
+      - name: Use Extracted Branch Name
+        run: |
+         extracted_branch=${{ steps.extract_branch_name.outputs.branch_name }}
+         echo "Extracted Branch Name: $extracted_branch"
+        
+         # 추출된 브랜치 이름을 Jira webhook URL에 추가
+         webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cba03d1be128b8bcd6?issue=$extracted_branch"
+        
+          # HTTP POST 요청 보내기
+         curl -X POST -H "Content-Type: application/json" -d "$webhook_url"
