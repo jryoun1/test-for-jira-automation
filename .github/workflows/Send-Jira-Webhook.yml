@@ -46,6 +46,9 @@ jobs:
             exit 0
           fi
           
+          filtered_commits=${{ steps.filter_commits.outputs.filtered_commits }}
+          echo "Filtered Commits: $filtered_commits"
+          
           # Jira webhook URL
           webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cba03d1be128b8bcd6"
         
