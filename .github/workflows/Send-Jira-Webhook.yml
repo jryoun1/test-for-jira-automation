@@ -19,7 +19,7 @@ jobs:
         run: |
           branch_ref=${{ github.ref }}
           # ios, mrt2-숫자n개가 포함되는 문자열을 추출
-          branch_name=$(echo "$branch_ref" | awk -F'/' 'match($NF, /(IOS/TEST)-[0-9]+/) {print toupper(substr($NF, RSTART, RLENGTH))}')
+          branch_name=$(echo "$branch_ref" | awk -F'/' 'match($NF, /(IOS|TEST)-[0-9]+/) {print toupper(substr($NF, RSTART, RLENGTH))}')
           echo "::set-output name=branch_name::$branch_name"
           
       - name: Filter Commits
@@ -28,7 +28,7 @@ jobs:
           commit_messages=$(git log --pretty=format:%s --no-merges)
           filtered_commits=""
           while read -r line; do
-            if [[ $line =~ (?i)(IOS/TEST)-[0-9]+ ]]; then
+            if [[ $line =~ (?i)(IOS|TEST)-[0-9]+ ]]; then
               filtered_commits+="\n$line"
             fi
           done <<< "$commit_messages"
