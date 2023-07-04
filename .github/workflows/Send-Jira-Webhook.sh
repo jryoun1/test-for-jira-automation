@@ -4,7 +4,7 @@
 git checkout $GITHUB_SHA
 
 # 정규식 패턴 변수 선언
-regex="(?i)test-[0-9]+"
+regex="(T|t)(E|e)(S|s)(T|t)-[0-9]+"
 
 extract_branch_name() {
   local input_string="$1"
@@ -60,11 +60,11 @@ fi
 webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cba03d1be128b8bcd6"
 
 # Jira에 보낼 JSON 데이터 설정
-payload="{\"issues\":[\"$branch_name\"]"
+payload="{\"issues\":[\"${branch_name^^}\"]"
 
 if [[ ${#filtered_messages[@]} -gt 0 ]]; then
   for message in "${filtered_messages[@]}"; do
-    payload+=",\"$message\""
+    payload+=",\"${message^^}\""
   done
 fi
 
