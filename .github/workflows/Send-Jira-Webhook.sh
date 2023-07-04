@@ -29,7 +29,8 @@ filter_commit_messages() {
 }
 
 # GitHub 레퍼런스에서 브랜치 정보 추출
-branch_ref="${{ github.ref }}"
+branch_ref=$(git rev-parse --abbrev-ref HEAD)
+echo "currentBranch $branch_ref"
 # 브랜치 이름 추출
 branch_name=$(extract_branch_name "$branch_ref")
 echo "Extracted Branch Name: $branch_name"
