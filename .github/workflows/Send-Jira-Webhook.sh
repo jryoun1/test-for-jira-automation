@@ -72,3 +72,4 @@ payload+="}"
 
 # HTTP POST 요청 보내기
 curl -X POST -H "Content-Type: application/json" -d "$payload" "$webhook_url"
+
