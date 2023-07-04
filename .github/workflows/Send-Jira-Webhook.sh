@@ -35,7 +35,7 @@ branch_name=$(extract_branch_name "$branch_ref")
 echo "Extracted Branch Name: $branch_name"
 
 # 커밋 메시지 필터링
-commit_messages=$(git log --pretty=format:%s --no-merges $(git merge-base origin/develop HEAD)..HEAD)
+commit_messages=$(git log --pretty=format:%s --no-merges $(git merge-base jeongmin/main HEAD)..HEAD)
 echo "commit_messages: $commit_messages"
 filtered_commits=$(filter_commit_messages "$commit_messages")
 
