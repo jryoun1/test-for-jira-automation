@@ -1,0 +1,14 @@
+name: Jira-webhook
+
+on: push # 모든 브랜치에 대해 실행됩니다.
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Run Script
+        run: ./$GITHUB_WORKSPACE/.github/workflows/Send-Jira-Webhook.sh
