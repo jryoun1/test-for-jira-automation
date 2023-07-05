@@ -1,10 +1,9 @@
-name: pull-request-jira-webhook
+name: pull-request-merge-jira-webhook
 
 on:
   pull_request:
     types:
-      - opened
-      - synchronize
+      - closed
 
 jobs:
   run-script:
@@ -19,4 +18,4 @@ jobs:
       - name: Run Shell Script
         run: |
           cd $GITHUB_WORKSPACE/.github/workflows
-          ./pull-request-jira-webhook.sh
+          ./pull-request-merge-jira-webhook.sh
