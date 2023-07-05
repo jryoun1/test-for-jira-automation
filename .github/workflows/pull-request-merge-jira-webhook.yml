@@ -1,0 +1,21 @@
+name: pull-request-merge-jira-webhook
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Run Shell Script
+        run: |
+          cd $GITHUB_WORKSPACE/.github/workflows
+          ./pull-request-merge-jira-webhook.sh

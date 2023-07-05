@@ -1,6 +1,10 @@
-name: Jira-webhook
+name: pull-request-jira-webhook
 
-on: push # 모든 브랜치에 대해 실행됩니다.
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 jobs:
   run-script:
@@ -9,8 +13,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Run Shell Script
         run: |
           cd $GITHUB_WORKSPACE/.github/workflows
-          ./Send-Jira-Webhook.sh
+          ./pull-request-jira-webhook.sh
