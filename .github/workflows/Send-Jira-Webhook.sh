@@ -21,7 +21,6 @@ filter_commit_messages() {
   while IFS= read -r line; do
     if [[ $line =~ $regex ]]; then
       local filtered_message="${BASH_REMATCH[0]}"
-      echo "here $filtered_message"
       filtered_commits+=("$filtered_message")
     fi
   done <<< "$messages"
