@@ -25,25 +25,21 @@ filter_commit_messages() {
       filtered_commits+=("$filtered_message")
     fi
   done <<< "$messages"
-  
-#  echo "${filtered[@]}"
 }
 
 # GitHub 레퍼런스에서 브랜치 정보 추출
 branch_ref=${GITHUB_REF#refs/heads/}
-#echo "currentBranch $branch_ref"
-# 브랜치 이름 추출
-extract_branch_name "$branch_ref"
+extract_branch_name "$branch_ref" # extract_branch_name함수를 통해 브랜치에서 정규식에 일치하는 부분만 추출
 echo "Extracted Branch Name: $branch_name"
 
-# 커밋 메시지 필터링
+# 현재 브랜치가 생성된 시점부터 push가 발생할 때까지의 커밋 메시지 필터링
 commit_messages=$(git log --pretty=format:%s --no-merges $(git merge-base origin/main HEAD)..HEAD)
-filter_commit_messages "$commit_messages"
-echo "Extracted Commit Name: ${filtered_commits[@]}"
+filter_commit_messages "$commit_messages" # filter_commit_messages함수를 통해 커밋메시지 중에서 정규식을 포함하고 있을 때, 정규식에 일치하는 문자열만 추출
+echo "Extracted Commits Name: ${filtered_commits[@]}"
 
 # 브랜치 이름과 필터링된 메시지 모두 비어 있는 경우
 if [[ -z "$branch_name" && -z "${filtered_commits[@]}" ]]; then
-  echo "Branch name and filtered messages are empty. Skipping Jira Webhook."
+  echo "Branch name and filtered messages are equalTo regex. Skipping Jira Webhook."
   exit 0
 fi
 
@@ -53,11 +49,15 @@ webhook_url="https://automation.atlassian.com/pro/hooks/ff51aba3cf64a8a40888f4cb
 # Jira에 보낼 JSON 데이터 설정
 payload="{\"issues\":["
 
-if [[ ${#filtered_commits[@]} -gt 0 ]]; then
 if [[ ! -z "$branch_name" ]]; then
-    payload+="\"${branch_name}\","
+    payload+="\"${branch_name}\""
+    
+    if [[ ${#filtered_commits[@]} -gt 0 ]]; then
+      payload+=","
+    fi
 fi
     
+if [[ ${#filtered_commits[@]} -gt 0 ]]; then
 for ((i=0; i<${#filtered_commits[@]}; i++)); do
     # 배열 요소 대문자로 변환 후 JSON 문자열에 추가
     payload+="\"$(echo "${filtered_commits[i]}" | tr '[:lower:]' '[:upper:]')\""
@@ -69,6 +69,7 @@ for ((i=0; i<${#filtered_commits[@]}; i++)); do
 fi
 
 payload+="] }"
+echo "payload: $payload"
 
 # HTTP POST 요청 보내기
 curl -X POST -H "Content-Type: application/json" -d "$payload" "$webhook_url"
