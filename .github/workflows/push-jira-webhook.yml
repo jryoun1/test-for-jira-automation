@@ -15,4 +15,4 @@ jobs:
       - name: Run Shell Script
         run: |
           cd $GITHUB_WORKSPACE/.github/workflows
-          ./send-jira-webhook.sh
+          ./Send-Jira-Webhook.sh
