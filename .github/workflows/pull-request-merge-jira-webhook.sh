@@ -27,7 +27,7 @@ filter_commit_messages() {
 }
 
 # GitHub 레퍼런스에서 브랜치 정보 추출
-branch_ref=${GITHUB_REF#refs/heads/}
+branch_ref=${GITHUB_HEAD_REF}
 extract_branch_name "$branch_ref" # extract_branch_name함수를 통해 브랜치에서 정규식에 일치하는 부분만 추출
 echo "Extracted Branch Name: $branch_name"
 
