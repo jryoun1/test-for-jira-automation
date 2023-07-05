@@ -21,7 +21,6 @@ filter_commit_messages() {
   while IFS= read -r line; do
     if [[ $line =~ $regex ]]; then
       local filtered_message="${BASH_REMATCH[0]}"
-      echo "here $filtered_message"
       filtered_commits+=("$filtered_message")
     fi
   done <<< "$messages"
@@ -33,7 +32,7 @@ extract_branch_name "$branch_ref" # extract_branch_name함수를 통해 브랜�
 echo "Extracted Branch Name: $branch_name"
 
 # 현재 브랜치가 생성된 시점부터 push가 발생할 때까지의 커밋 메시지 필터링
-commit_messages=$(git log --pretty=format:%s --no-merges $(git merge-base origin/main HEAD)..HEAD)
+commit_messages=$(git log --pretty=format:%s --no-merges $(git merge-base origin/main $GITHUB_SHA)..$GITHUB_SHA)
 filter_commit_messages "$commit_messages" # filter_commit_messages함수를 통해 커밋메시지 중에서 정규식을 포함하고 있을 때, 정규식에 일치하는 문자열만 추출
 echo "Extracted Commits Name: ${filtered_commits[@]}"
 
